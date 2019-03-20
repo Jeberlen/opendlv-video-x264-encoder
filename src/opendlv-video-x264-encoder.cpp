@@ -28,13 +28,68 @@ extern "C" {
 #include <iostream>
 #include <vector>
 
+/*
+ * @TODO remove after testing is done
+ * docker run --rm -ti --init --ipc=host -v /tmp:/tmp -v $PWD:/data -w /data x264test --cid=122 --name=video0.i420
+   --width=640 --height=480 --verbose --keyint-min=0 --keyint-max=0 --scenecut=0 --intra-refresh=0 --bframe=0
+   --b-adapt=0 --b-pyramid=0 --open-gop=0 --cabac=0 --deblock=0 --rc-method=0 --qp=0 --bitrate=0 --crf=0
+   --rc-lookahead=0 --vbv-maxrate=0 --vbv-bufsize=0 --vbv-init=0 --qpmin=0 --qpmax=0 --qpstep=0 --ratetol=0
+   --ipratio=0 --pbratio=0 --chroma-qp-offset=0 --aq-mode=0 --aq-strength=0 --mbtree=0 --qcomp=0 --cplxblur=0
+   --direct=0 --weightb=0 -weightp=0 --me=0 --merange=0 --subme=0 --psy=0 --mixed-refs=0 --chroma-me=0 --trellis=0
+   --fast-pskip=0 --dct-decimate=0 --nr=0 --cqm=0
+ */
+
 int32_t main(int32_t argc, char **argv) {
     int32_t retCode{1};
     auto commandlineArguments = cluon::getCommandlineArguments(argc, argv);
     if ( (0 == commandlineArguments.count("cid")) ||
          (0 == commandlineArguments.count("name")) ||
          (0 == commandlineArguments.count("width")) ||
-         (0 == commandlineArguments.count("height")) ) {
+         (0 == commandlineArguments.count("height")) ||
+         (0 == commandlineArguments.count("keyint-min"))||
+         (0 == commandlineArguments.count("keyint-max")) ||
+         (0 == commandlineArguments.count("scenecut")) ||
+         (0 == commandlineArguments.count("intra-refresh")) ||
+         (0 == commandlineArguments.count("bframe")) ||
+         (0 == commandlineArguments.count("b-adapt")) ||
+         (0 == commandlineArguments.count("b-pyramid")) ||
+         (0 == commandlineArguments.count("open-gop"))||
+         (0 == commandlineArguments.count("cabac")) ||
+         (0 == commandlineArguments.count("deblock")) ||
+         (0 == commandlineArguments.count("rc-method")) ||
+         (0 == commandlineArguments.count("qp"))||
+         (0 == commandlineArguments.count("bitrate")) ||
+         (0 == commandlineArguments.count("crf")) ||
+         (0 == commandlineArguments.count("rc-lookahead"))||
+         (0 == commandlineArguments.count("vbv-maxrate")) ||
+         (0 == commandlineArguments.count("vbv-bufsize")) ||
+         (0 == commandlineArguments.count("vbv-init")) ||
+         (0 == commandlineArguments.count("qpmin"))||
+         (0 == commandlineArguments.count("qpmax")) ||
+         (0 == commandlineArguments.count("qpstep")) ||
+         (0 == commandlineArguments.count("ratetol"))||
+         (0 == commandlineArguments.count("ipratio")) ||
+         (0 == commandlineArguments.count("pbratio")) ||
+         (0 == commandlineArguments.count("chroma-qp-offset")) ||
+         (0 == commandlineArguments.count("aq-mode"))||
+         (0 == commandlineArguments.count("aq-strength")) ||
+         (0 == commandlineArguments.count("mbtree")) ||
+         (0 == commandlineArguments.count("qcomp")) ||
+         (0 == commandlineArguments.count("cplxblur"))||
+         (0 == commandlineArguments.count("direct")) ||
+         (0 == commandlineArguments.count("weightb")) ||
+         (0 == commandlineArguments.count("weightp")) ||
+         (0 == commandlineArguments.count("me")) ||
+         (0 == commandlineArguments.count("merange")) ||
+         (0 == commandlineArguments.count("subme")) ||
+         (0 == commandlineArguments.count("psy")) ||
+         (0 == commandlineArguments.count("mixed-refs")) ||
+         (0 == commandlineArguments.count("chroma-me"))||
+         (0 == commandlineArguments.count("trellis")) ||
+         (0 == commandlineArguments.count("fast-pskip")) ||
+         (0 == commandlineArguments.count("dct-decimate")) ||
+         (0 == commandlineArguments.count("nr"))||
+         (0 == commandlineArguments.count("cqm"))) {
         std::cerr << argv[0] << " attaches to an I420-formatted image residing in a shared memory area to convert it into a corresponding h264 frame for publishing to a running OD4 session." << std::endl;
         std::cerr << "Usage:   " << argv[0] << " --cid=<OpenDaVINCI session> --name=<name of shared memory area> --width=<width> --height=<height> [--gop=<GOP>] [--preset=X] [--verbose] [--id=<identifier in case of multiple instances]" << std::endl;
         std::cerr << "         --cid:      CID of the OD4Session to send h264 frames" << std::endl;
@@ -61,15 +116,11 @@ int32_t main(int32_t argc, char **argv) {
          * Thesis params
          * http://www.chaneru.com/Roku/HLS/X264_Settings.htm
          * https://code.videolan.org/videolan/x264/blob/master/x264.h
-         *
-         * QUESTIONS:
-         * - Profile and tune
-         * - All Input/Output, such as threading params?
          */
 
         // Presets
-        const std::string PROFILE{commandlineArguments["profile"]};
-        const std::string TUNE{commandlineArguments["tune"]};
+        //const std::string PROFILE{commandlineArguments["profile"]};
+        //const std::string TUNE{commandlineArguments["tune"]};
 
         // Frame-type options
         const uint32_t KEYINT_MIN{static_cast<uint32_t>(std::stoi(commandlineArguments["keyint-min"]))};
@@ -119,7 +170,6 @@ int32_t main(int32_t argc, char **argv) {
         const uint32_t NR{static_cast<uint32_t >(std::stoi(commandlineArguments["nr"]))};
         const uint32_t CQM{static_cast<uint32_t >(std::stoi(commandlineArguments["cqm"]))};
 
-
         std::unique_ptr<cluon::SharedMemory> sharedMemory(new cluon::SharedMemory{NAME});
         if (sharedMemory && sharedMemory->valid()) {
             std::clog << "[opendlv-video-x264-encoder]: Attached to '" << sharedMemory->name() << "' (" << sharedMemory->size() << " bytes)." << std::endl;
@@ -146,6 +196,7 @@ int32_t main(int32_t argc, char **argv) {
             /*
             * Thesis params
             */
+
             parameters.i_keyint_min = KEYINT_MIN;
             parameters.i_keyint_max = KEYINT_MAX;
             parameters.i_scenecut_threshold = SCENECUT;
@@ -193,8 +244,6 @@ int32_t main(int32_t argc, char **argv) {
             parameters.analyse.b_fast_pskip = FAST_PSKIP;
             parameters.analyse.b_dct_decimate = DCT_DECIMATE;
             parameters.analyse.i_noise_reduction = NR;
-
-
 
             if (0 != x264_param_apply_profile(&parameters, "baseline")) {
                 std::cerr << "[opendlv-video-x264-encoder]:Failed to apply parameters for x264." << std::endl;
