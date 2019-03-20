@@ -17,6 +17,7 @@
 
 #include "cluon-complete.hpp"
 #include "opendlv-standard-message-set.hpp"
+#include "cluon-complete-v0.0.117.hpp"
 
 extern "C" {
     #include <x264.h>
@@ -50,11 +51,74 @@ int32_t main(int32_t argc, char **argv) {
         const std::string NAME{commandlineArguments["name"]};
         const uint32_t WIDTH{static_cast<uint32_t>(std::stoi(commandlineArguments["width"]))};
         const uint32_t HEIGHT{static_cast<uint32_t>(std::stoi(commandlineArguments["height"]))};
-        const uint32_t GOP_DEFAULT{10};
-        const uint32_t GOP{(commandlineArguments["gop"].size() != 0) ? static_cast<uint32_t>(std::stoi(commandlineArguments["gop"])) : GOP_DEFAULT};
+        //const uint32_t GOP_DEFAULT{10};
+        //const uint32_t GOP{(commandlineArguments["gop"].size() != 0) ? static_cast<uint32_t>(std::stoi(commandlineArguments["gop"])) : GOP_DEFAULT};
         const std::string PRESET{(commandlineArguments["preset"].size() != 0) ? commandlineArguments["preset"] : "veryfast"};
         const bool VERBOSE{commandlineArguments.count("verbose") != 0};
         const uint32_t ID{(commandlineArguments["id"].size() != 0) ? static_cast<uint32_t>(std::stoi(commandlineArguments["id"])) : 0};
+
+        /*
+         * Thesis params
+         * http://www.chaneru.com/Roku/HLS/X264_Settings.htm
+         * https://code.videolan.org/videolan/x264/blob/master/x264.h
+         *
+         * QUESTIONS:
+         * - Profile and tune
+         * - All Input/Output, such as threading params?
+         */
+
+        // Presets
+        const std::string PROFILE{commandlineArguments["profile"]};
+        const std::string TUNE{commandlineArguments["tune"]};
+
+        // Frame-type options
+        const uint32_t KEYINT_MIN{static_cast<uint32_t>(std::stoi(commandlineArguments["keyint-min"]))};
+        const uint32_t KEYINT_MAX{static_cast<uint32_t>(std::stoi(commandlineArguments["keyint-max"]))};
+        const uint32_t SCENECUT{static_cast<uint32_t>(std::stoi(commandlineArguments["scenecut"]))};
+        const uint32_t INTRA_REFRESH{static_cast<uint32_t>(std::stoi(commandlineArguments["intra-refresh"]))};
+        const uint32_t BFRAME{static_cast<uint32_t>(std::stoi(commandlineArguments["bframe"]))};
+        const uint32_t B_ADAPT{static_cast<uint32_t>(std::stoi(commandlineArguments["b-adapt"]))};
+        const uint32_t B_PYRAMID{static_cast<uint32_t>(std::stoi(commandlineArguments["b-pyramid"]))};
+        const uint32_t OPEN_GOP{static_cast<uint32_t>(std::stoi(commandlineArguments["open-gop"]))};
+        const uint32_t CABAC{static_cast<uint32_t>(std::stoi(commandlineArguments["cabac"]))};
+        const uint32_t DEBLOCK{static_cast<uint32_t>(std::stoi(commandlineArguments["deblock"]))};
+
+        //Rate-control
+        const uint32_t RC_METHOD{static_cast<uint32_t>(std::stoi(commandlineArguments["rc-method"]))};
+        const uint32_t QP{static_cast<uint32_t>(std::stoi(commandlineArguments["qp"]))};
+        const uint32_t BITRATE{static_cast<uint32_t>(std::stoi(commandlineArguments["bitrate"]))};
+        const float_t CRF{static_cast<float_t >(std::stof(commandlineArguments["crf"]))};
+        const uint32_t RC_LOOKAHEAD{static_cast<uint32_t >(std::stoi(commandlineArguments["rc-lookahead"]))};
+        const uint32_t VBV_MAXRATE{static_cast<uint32_t >(std::stoi(commandlineArguments["vbv-maxrate"]))};
+        const uint32_t VBV_BUFSIZE{static_cast<uint32_t >(std::stoi(commandlineArguments["vbv-bufsize"]))};
+        const float_t VBV_INIT{static_cast<float_t >(std::stof(commandlineArguments["vbv-init"]))};
+        const uint32_t QPMIN{static_cast<uint32_t >(std::stoi(commandlineArguments["qpmin"]))};
+        const uint32_t QPMAX{static_cast<uint32_t >(std::stoi(commandlineArguments["qpmax"]))};
+        const uint32_t QPSTEP{static_cast<uint32_t >(std::stoi(commandlineArguments["qpstep"]))};
+        const float_t RATETOL{static_cast<float_t >(std::stof(commandlineArguments["ratetol"]))};
+        const float_t IPRATIO{static_cast<float_t >(std::stof(commandlineArguments["ipratio"]))};
+        const float_t PBRATIO{static_cast<float_t >(std::stof(commandlineArguments["pbratio"]))};
+        const uint32_t CHROMA_QP_OFFSET{static_cast<uint32_t >(std::stoi(commandlineArguments["chroma-qp-offset"]))};
+        const uint32_t AQ_MODE{static_cast<uint32_t >(std::stoi(commandlineArguments["aq-mode"]))};
+        const float_t AQ_STRENGTH{static_cast<float_t >(std::stof(commandlineArguments["aq-strength"]))};
+        const uint32_t MBTREE{static_cast<uint32_t >(std::stoi(commandlineArguments["mbtree"]))};
+        const float_t QCOMP{static_cast<float_t >(std::stof(commandlineArguments["qcomp"]))};
+        const uint32_t CPLXBLUR{static_cast<uint32_t >(std::stoi(commandlineArguments["cplxblur"]))};
+        const uint32_t DIRECT{static_cast<uint32_t >(std::stoi(commandlineArguments["direct"]))};
+        const uint32_t WEIGHTB{static_cast<uint32_t >(std::stoi(commandlineArguments["weightb"]))};
+        const uint32_t WEIGHTP{static_cast<uint32_t >(std::stoi(commandlineArguments["weightp"]))};
+        const uint32_t ME{static_cast<uint32_t >(std::stoi(commandlineArguments["me"]))};
+        const uint32_t MERANGE{static_cast<uint32_t >(std::stoi(commandlineArguments["merange"]))};
+        const uint32_t SUBME{static_cast<uint32_t >(std::stoi(commandlineArguments["subme"]))};
+        const uint32_t PSY{static_cast<uint32_t >(std::stoi(commandlineArguments["psy"]))};
+        const uint32_t MIXED_REFS{static_cast<uint32_t >(std::stoi(commandlineArguments["mixed-refs"]))};
+        const uint32_t CHROMA_ME{static_cast<uint32_t >(std::stoi(commandlineArguments["chroma-me"]))};
+        const uint32_t TRELLIS{static_cast<uint32_t >(std::stoi(commandlineArguments["trellis"]))};
+        const uint32_t FAST_PSKIP{static_cast<uint32_t >(std::stoi(commandlineArguments["fast-pskip"]))};
+        const uint32_t DCT_DECIMATE{static_cast<uint32_t >(std::stoi(commandlineArguments["dct-decimate"]))};
+        const uint32_t NR{static_cast<uint32_t >(std::stoi(commandlineArguments["nr"]))};
+        const uint32_t CQM{static_cast<uint32_t >(std::stoi(commandlineArguments["cqm"]))};
+
 
         std::unique_ptr<cluon::SharedMemory> sharedMemory(new cluon::SharedMemory{NAME});
         if (sharedMemory && sharedMemory->valid()) {
@@ -72,12 +136,66 @@ int32_t main(int32_t argc, char **argv) {
             parameters.i_csp = X264_CSP_I420;
             parameters.i_bitdepth = 8;
             parameters.i_threads = 1;
-            parameters.i_keyint_min = GOP;
-            parameters.i_keyint_max = GOP;
+            //parameters.i_keyint_min = GOP;
+            //parameters.i_keyint_max = GOP;
             parameters.i_fps_num = 20 /* implicitly derived from SharedMemory notifications */;
             parameters.b_vfr_input = 0;
             parameters.b_repeat_headers = 1;
             parameters.b_annexb = 1;
+
+            /*
+            * Thesis params
+            */
+            parameters.i_keyint_min = KEYINT_MIN;
+            parameters.i_keyint_max = KEYINT_MAX;
+            parameters.i_scenecut_threshold = SCENECUT;
+            parameters.i_bframe = BFRAME;
+            parameters.i_bframe_adaptive = B_ADAPT;
+            parameters.i_bframe_pyramid = B_PYRAMID;
+            parameters.i_cqm_preset = CQM;
+
+            parameters.b_intra_refresh = INTRA_REFRESH;
+            parameters.b_open_gop = OPEN_GOP;
+            parameters.b_cabac = CABAC;
+            parameters.b_deblocking_filter = DEBLOCK;
+
+            parameters.rc.i_rc_method = RC_METHOD;
+            parameters.rc.i_qp_constant = QP;
+            parameters.rc.i_qp_min = QPMIN;
+            parameters.rc.i_qp_max = QPMAX;
+            parameters.rc.i_qp_step = QPSTEP;
+            parameters.rc.i_bitrate = BITRATE;
+            parameters.rc.f_rf_constant_max = CRF;
+            parameters.rc.i_lookahead = RC_LOOKAHEAD;
+            parameters.rc.i_vbv_max_bitrate = VBV_MAXRATE;
+            parameters.rc.i_vbv_buffer_size = VBV_BUFSIZE;
+            parameters.rc.f_vbv_buffer_init = VBV_INIT;
+            parameters.rc.f_rate_tolerance = RATETOL;
+            parameters.rc.f_ip_factor = IPRATIO;
+            parameters.rc.f_pb_factor = PBRATIO;
+            parameters.rc.i_aq_mode = AQ_MODE;
+            parameters.rc.f_aq_strength = AQ_STRENGTH;
+            parameters.rc.b_mb_tree = MBTREE;
+            parameters.rc.f_qcompress = QCOMP;
+            parameters.rc.f_complexity_blur = CPLXBLUR;
+
+            parameters.analyse.i_weighted_pred = WEIGHTP;
+            parameters.analyse.b_weighted_bipred = WEIGHTB;
+            parameters.analyse.i_direct_mv_pred = DIRECT;
+            parameters.analyse.i_chroma_qp_offset = CHROMA_QP_OFFSET;
+            parameters.analyse.i_me_method = ME;
+            parameters.analyse.i_me_range = MERANGE;
+            parameters.analyse.i_subpel_refine = SUBME;
+            parameters.analyse.b_psy = PSY;
+            parameters.analyse.b_mixed_references = MIXED_REFS;
+            parameters.analyse.b_chroma_me = CHROMA_ME;
+            parameters.analyse.i_trellis = TRELLIS;
+            parameters.analyse.b_fast_pskip = FAST_PSKIP;
+            parameters.analyse.b_dct_decimate = DCT_DECIMATE;
+            parameters.analyse.i_noise_reduction = NR;
+
+
+
             if (0 != x264_param_apply_profile(&parameters, "baseline")) {
                 std::cerr << "[opendlv-video-x264-encoder]:Failed to apply parameters for x264." << std::endl;
                 return 1;
