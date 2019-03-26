@@ -17,7 +17,6 @@
 
 #include "cluon-complete.hpp"
 #include "opendlv-standard-message-set.hpp"
-#include "cluon-complete-v0.0.117.hpp"
 
 extern "C" {
     #include <x264.h>
