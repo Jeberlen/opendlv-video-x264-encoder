@@ -30,7 +30,7 @@ extern "C" {
 /*
  * @TODO remove after testing is done
  * docker run --rm -ti --init --ipc=host -v /tmp:/tmp -v $PWD:/data -w /data x264test --cid=122 --name=video0.i420
-   --width=640 --height=480 --verbose --preset=0 --tune=0 --keyint-min=0 --keyint-max=0 --scenecut=0 --intra-refresh=0 --bframe=0
+   --width=640 --height=480 --verbose --preset=0 --keyint-min=0 --keyint-max=0 --scenecut=0 --intra-refresh=0 --bframe=0
    --b-adapt=0 --b-pyramid=0 --open-gop=0 --cabac=0 --deblock=0 --rc-method=0 --qp=0 --bitrate=0 --crf=0
    --rc-lookahead=0 --vbv-maxrate=0 --vbv-bufsize=0 --vbv-init=0 --qpmin=0 --qpmax=0 --qpstep=0 --ratetol=0
    --ipratio=0 --pbratio=0 --chroma-qp-offset=0 --aq-mode=0 --aq-strength=0 --mbtree=0 --qcomp=0 --cplxblur=0
@@ -121,7 +121,16 @@ int32_t main(int32_t argc, char **argv) {
 
         // Presets
         const std::string PRESET{(commandlineArguments["preset"].size() != 0) ? commandlineArguments["preset"] : "veryfast"}; // can also be indexed numerically, as in: "3"
-        const std::string TUNE{(commandlineArguments["tune"].size() != 0) ? commandlineArguments["tune"] : "zerolatency"};
+
+        const uint32_t TUNE{static_cast<uint32_t>(std::stoi(commandlineArguments["tune"]))};
+        std::string TUNE_S = "zerolatency";
+        if (TUNE == 0) TUNE_S = "film";
+        else if(TUNE == 1) TUNE_S = "animation";
+        else if(TUNE == 2) TUNE_S = "grain";
+        else if(TUNE == 3) TUNE_S = "stillimage";
+        else if(TUNE == 4) TUNE_S = "psnr";
+        else if(TUNE == 5) TUNE_S = "ssim";
+        else if(TUNE == 6) TUNE_S = "fastdecode";
 
         // Frame-type options
         const uint32_t KEYINT_MIN{static_cast<uint32_t>(std::stoi(commandlineArguments["keyint-min"]))};
@@ -177,7 +186,7 @@ int32_t main(int32_t argc, char **argv) {
 
             // Configure x264 parameters.
             x264_param_t parameters;
-            if (0 != x264_param_default_preset(&parameters, PRESET.c_str(), TUNE.c_str())) {
+            if (0 != x264_param_default_preset(&parameters, PRESET.c_str(), TUNE_S.c_str())) {
                 std::cerr << "[opendlv-video-x264-encoder]: Failed to load preset parameters (" << PRESET << "," << TUNE << ") for x264." << std::endl;
                 return 1;
             }
