@@ -30,7 +30,7 @@ extern "C" {
 /*
  * @TODO remove after testing is done
  * docker run --rm -ti --init --ipc=host -v /tmp:/tmp -v $PWD:/data -w /data x264test --cid=122 --name=video0.i420
-   --width=640 --height=480 --verbose --keyint-min=0 --keyint-max=0 --scenecut=0 --intra-refresh=0 --bframe=0
+   --width=640 --height=480 --verbose --preset=0 --tune=0 --keyint-min=0 --keyint-max=0 --scenecut=0 --intra-refresh=0 --bframe=0
    --b-adapt=0 --b-pyramid=0 --open-gop=0 --cabac=0 --deblock=0 --rc-method=0 --qp=0 --bitrate=0 --crf=0
    --rc-lookahead=0 --vbv-maxrate=0 --vbv-bufsize=0 --vbv-init=0 --qpmin=0 --qpmax=0 --qpstep=0 --ratetol=0
    --ipratio=0 --pbratio=0 --chroma-qp-offset=0 --aq-mode=0 --aq-strength=0 --mbtree=0 --qcomp=0 --cplxblur=0
@@ -45,6 +45,8 @@ int32_t main(int32_t argc, char **argv) {
          (0 == commandlineArguments.count("name")) ||
          (0 == commandlineArguments.count("width")) ||
          (0 == commandlineArguments.count("height")) ||
+         (0 == commandlineArguments.count("preset")) ||
+         (0 == commandlineArguments.count("tune")) ||
          (0 == commandlineArguments.count("keyint-min"))||
          (0 == commandlineArguments.count("keyint-max")) ||
          (0 == commandlineArguments.count("scenecut")) ||
@@ -107,7 +109,7 @@ int32_t main(int32_t argc, char **argv) {
         const uint32_t HEIGHT{static_cast<uint32_t>(std::stoi(commandlineArguments["height"]))};
         //const uint32_t GOP_DEFAULT{10};
         //const uint32_t GOP{(commandlineArguments["gop"].size() != 0) ? static_cast<uint32_t>(std::stoi(commandlineArguments["gop"])) : GOP_DEFAULT};
-        const std::string PRESET{(commandlineArguments["preset"].size() != 0) ? commandlineArguments["preset"] : "veryfast"};
+        //const std::string PRESET{(commandlineArguments["preset"].size() != 0) ? commandlineArguments["preset"] : "veryfast"};
         const bool VERBOSE{commandlineArguments.count("verbose") != 0};
         const uint32_t ID{(commandlineArguments["id"].size() != 0) ? static_cast<uint32_t>(std::stoi(commandlineArguments["id"])) : 0};
 
@@ -118,8 +120,8 @@ int32_t main(int32_t argc, char **argv) {
          */
 
         // Presets
-        //const std::string PROFILE{commandlineArguments["profile"]};
-        //const std::string TUNE{commandlineArguments["tune"]};
+        const std::string PRESET{(commandlineArguments["preset"].size() != 0) ? commandlineArguments["preset"] : "veryfast"}; // can also be indexed numerically, as in: "3"
+        const std::string TUNE{(commandlineArguments["tune"].size() != 0) ? commandlineArguments["tune"] : "zerolatency"};
 
         // Frame-type options
         const uint32_t KEYINT_MIN{static_cast<uint32_t>(std::stoi(commandlineArguments["keyint-min"]))};
@@ -175,8 +177,8 @@ int32_t main(int32_t argc, char **argv) {
 
             // Configure x264 parameters.
             x264_param_t parameters;
-            if (0 != x264_param_default_preset(&parameters, PRESET.c_str(), "zerolatency")) {
-                std::cerr << "[opendlv-video-x264-encoder]: Failed to load preset parameters (" << PRESET << ", zerolatency) for x264." << std::endl;
+            if (0 != x264_param_default_preset(&parameters, PRESET.c_str(), TUNE.c_str())) {
+                std::cerr << "[opendlv-video-x264-encoder]: Failed to load preset parameters (" << PRESET << "," << TUNE << ") for x264." << std::endl;
                 return 1;
             }
             parameters.i_width  = WIDTH;
@@ -195,7 +197,6 @@ int32_t main(int32_t argc, char **argv) {
             /*
             * Thesis params
             */
-
             parameters.i_keyint_min = KEYINT_MIN;
             parameters.i_keyint_max = KEYINT_MAX;
             parameters.i_scenecut_threshold = SCENECUT;
